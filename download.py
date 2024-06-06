@@ -60,18 +60,6 @@ def prune_files():
             f.unlink()
         log(f"Done!\n")
 
-def make_index():
-    music_files = list(map(lambda x: x.name, filter(lambda x: x.suffix == ".mp3", reversed(sorted(Path(server_dir).iterdir(), key=os.path.getmtime)))))
-    log(f"Building index at {server_dir}/data.js ...")
-
-    with open(f"{server_dir}/data.generated.js", "w") as data_file:
-        log(f"Dumping index: {music_files}")
-        array = json.dumps(music_files)
-        data_file.write(f"_data={array};")
-        log(f"Dumped index")
-
-    log("Done!\n")
-
 def download_video(url):
     cwd = os.getcwd()
     os.chdir(build_dir)
@@ -90,7 +78,6 @@ def main(video_url):
     download_video(video_url)
     move_files()
     prune_files()
-    make_index()
     cleanup_dir()
     log("Done!\n")
 
