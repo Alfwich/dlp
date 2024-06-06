@@ -7,6 +7,7 @@ import urllib.request
 import json
 import urllib
 import shutil
+import string
 
 from pathlib import Path
 
@@ -26,7 +27,8 @@ def get_title_from_url(url):
     with urllib.request.urlopen(url) as response:
         response_text = response.read()
         data = json.loads(response_text.decode())
-        return "".join(c for c in data['title'] if c.isalpha() or c.isdigit() or c==' ').rstrip().replace("  ", " ").replace(" ", "-")
+
+        return "".join(c for c in data['title'] if (c.isalpha() or c.isdigit() or c==' ') and c in string.printable).rstrip().replace("  ", " ").replace(" ", "-")
 
 def prepare_dir():
     # Ensure we are starting from a clean build dir
@@ -83,7 +85,7 @@ def download_video(url):
     log("Done!\n")
     video_name = find_processed_file(title)
     log("Converting video to .mp3 ... ")
-    subprocess.run([f"/usr/bin/ffmpeg", "-i", video_name, f"{title}.mp3"])
+    subprocess.run([f"/usr/bin/ffmpeg", "-i", video_name, f"{title}.mp3"], stderr=subprocess.STDOUT)
     log("Done!\n")
     os.chdir(cwd)
 
