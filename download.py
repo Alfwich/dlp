@@ -61,18 +61,10 @@ def prune_files():
         log(f"Done!\n")
 
 def make_index():
-    with open(f"{server_dir}/index.html", "w") as f:
-        log(f"Building index ... ")
-        f.write("<html><head></head>\n")
-        f.write("<a href=\"http://www.wuteri.ch/misc/load.php\" style=\" font-size: 30px;\">Load song</a>\n")
-        f.write("<h1>Available Audio Tracks</h1>\n")
-        f.write("<ul>\n")
-        music_files = list(filter(lambda x: x.suffix == ".mp3", reversed(sorted(Path(server_dir).iterdir(), key=os.path.getmtime))))
-        for music_file in music_files:
-            f.write(f"<li style=\"font-size: 30px; padding-bottom: 10px\"><a href=\"http://wuteri.ch/misc/{music_file.name}\">{music_file.name}</a></li>")
-        f.write("</ul>\n")
-
-        f.write("</html>")
+    music_files = list(map(lambda x: x.name, filter(lambda x: x.suffix == ".mp3", reversed(sorted(Path(server_dir).iterdir(), key=os.path.getmtime)))))
+    with open(f"{server_dir}/data.js", "w") as f:
+        array = json.dumps(music_files)
+        f.write(f"_data={array};")
 
     log("Done!\n")
 
