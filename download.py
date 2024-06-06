@@ -8,6 +8,8 @@ import json
 import urllib
 import shutil
 
+from pathlib import Path
+
 build_dir = "build"
 server_dir = "/www/wuteri.ch/misc"
 
@@ -47,9 +49,18 @@ def move_files():
             log(f"Installing {f}\n") 
             subprocess.run(["cp", f"{build_dir}/{f}", f"{server_dir}/{f}"])
 
+def prune_files():
+    files_to_prune = list(filter(lambda x: x.suffix == ".mp3", reversed(sorted(Path(server_dir).iterdir(), key=os.path.getmtime))))[10:]
+
+    if len(files_to_prune) > 0:
+        log(f"Pruning {len(files_to_prune)} files ... ")
+        for f in files_to_prune:
+            f.unlink()
+        log(f"Done!\n")
+
 def make_index():
     with open(f"{server_dir}/index.html", "w") as f:
-        log(f"Building index at {server_dir}/index.html ... ")
+        log(f"Building index ... ")
         f.write("<html><head></head>\n")
         f.write("<h1>Available Videos</h1>\n")
         f.write("<ul>\n")
@@ -57,6 +68,8 @@ def make_index():
             if music_file.endswith(".mp3"):
                 f.write(f"<li style=\"font-size: 30px; padding-bottom: 10px\"><a href=\"http://wuteri.ch/misc/{music_file}\">{music_file}</a></li>")
         f.write("</ul>\n")
+
+        f.write("<a href=\"http://www.wuteri.ch/misc/load.php\">Load song</a>\n")
         f.write("</html>")
 
     log("Done!\n")
@@ -78,6 +91,7 @@ def main(video_url):
     prepare_dir()
     download_video(video_url)
     move_files()
+    prune_files()
     make_index()
     cleanup_dir()
     log("Done!\n")
