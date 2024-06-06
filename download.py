@@ -6,10 +6,14 @@ import os
 import urllib.request
 import json
 import urllib
-
+import shutil
 
 build_dir = "build"
 server_dir = "/www/wuteri.ch/misc"
+
+def log(msg):
+    sys.stdout.write(msg)
+    sys.stdout.flush()
 
 def get_title_from_url(url):
     params = {"format": "json", "url": url}
@@ -20,17 +24,19 @@ def get_title_from_url(url):
     with urllib.request.urlopen(url) as response:
         response_text = response.read()
         data = json.loads(response_text.decode())
-        print(data['title'])
         return "".join(c for c in data['title'] if c.isalpha() or c.isdigit() or c==' ').rstrip().replace("  ", " ").replace(" ", "-")
 
 def prepare_dir():
-    try:
-        os.mkdir(build_dir)
-    except OSError as error:
-        pass
+    # Ensure we are starting from a clean build dir
+    if os.path.exists(build_dir):
+        cleanup_dir()
+
+    os.mkdir(build_dir)
+
+def cleanup_dir():
+    shutil.rmtree(build_dir)
 
 def find_processed_file(name):
-
     for f in os.listdir("."):
         if f.startswith(f"{name}."):
             return f
@@ -38,42 +44,49 @@ def find_processed_file(name):
 def move_files():
     for f in os.listdir(build_dir):
         if f.endswith(".mp3"):
+            log(f"Installing {f}\n") 
             subprocess.run(["cp", f"{build_dir}/{f}", f"{server_dir}/{f}"])
 
 def make_index():
-    index_lines = []
-    for f in os.listdir(server_dir):
-        if f.endswith(".mp3"):
-            index_lines.append(f"<li style=\"font-size: 30px; padding-bottom: 10px\"><a href=\"http://wuteri.ch/misc/{f}\">{f}</a></li>")
-
     with open(f"{server_dir}/index.html", "w") as f:
+        log(f"Building index at {server_dir}/index.html ... ")
         f.write("<html><head></head>\n")
         f.write("<h1>Available Videos</h1>\n")
         f.write("<ul>\n")
-        for line in index_lines:
-            f.write(line)
+        for music_file in os.listdir(server_dir):
+            if music_file.endswith(".mp3"):
+                f.write(f"<li style=\"font-size: 30px; padding-bottom: 10px\"><a href=\"http://wuteri.ch/misc/{music_file}\">{music_file}</a></li>")
         f.write("</ul>\n")
         f.write("</html>")
 
+    log("Done!\n")
+
 def download_video(url):
-    prepare_dir()
     cwd = os.getcwd()
     os.chdir(build_dir)
     title = get_title_from_url(url)
-    print(f"Downloading video: {title}")
-    subprocess.run([f"yt-dlp", url, "-o", title])
+    log(f"Downloading video: {title}... ")
+    subprocess.run([f"yt-dlp", url, "-o", title], stdout=subprocess.PIPE)
+    log("Done!\n")
     video_name = find_processed_file(title)
-    print("Converting video to .mp3")
-    subprocess.run([f"ffmpeg", "-i", video_name, f"{title}.mp3"])
-    print(f"Video downloaded in build/{title}.mp3")
+    log("Converting video to .mp3 ... ")
+    subprocess.run([f"ffmpeg", "-i", video_name, f"{title}.mp3"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    log("Done!\n")
     os.chdir(cwd)
 
+def main(video_url):
+    print(video_url)
+    prepare_dir()
+    download_video(video_url)
+    move_files()
+    make_index()
+    cleanup_dir()
+    log("Done!\n")
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2 or not os.geteuid() == 0:
-        print("Expected usage: sudo ./download.py <url>")
+    if len(sys.argv) < 2:
+        log("Expected usage: ./download.py <url>\n")
     else:
-        download_video(sys.argv[1])
-        move_files()
-        make_index()
+        main(sys.argv[1])
+
 
