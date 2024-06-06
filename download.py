@@ -11,6 +11,8 @@ import string
 
 from pathlib import Path
 
+from yt_dlp import YoutubeDL
+
 build_dir = "build"
 server_dir = "/www/wuteri.ch/misc"
 
@@ -19,16 +21,13 @@ def log(msg):
     sys.stdout.flush()
 
 def get_title_from_url(url):
-    params = {"format": "json", "url": url}
-    url = "https://www.youtube.com/oembed"
-    query_string = urllib.parse.urlencode(params)
-    url = url + "?" + query_string
-
-    with urllib.request.urlopen(url) as response:
-        response_text = response.read()
-        data = json.loads(response_text.decode())
-
-        return "".join(c for c in data['title'] if (c.isalpha() or c.isdigit() or c==' ') and c in string.printable).rstrip().replace("  ", " ").replace(" ", "-")
+    with YoutubeDL() as ydl:
+        info_dict = ydl.extract_info(url, download=False)
+        video_url = info_dict.get("url", None)
+        video_id = info_dict.get("id", None)
+        video_title = info_dict.get('title', None)
+        print("Title: " + video_title) # <= Here, you got the video title
+        return "".join(c for c in video_title if (c.isalpha() or c.isdigit() or c==' ') and c in string.printable).rstrip().replace("  ", " ").replace(" ", "-")
 
 def prepare_dir():
     # Ensure we are starting from a clean build dir
