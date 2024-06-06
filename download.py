@@ -64,7 +64,7 @@ def make_index():
     with open(f"{server_dir}/index.html", "w") as f:
         log(f"Building index ... ")
         f.write("<html><head></head>\n")
-        f.write("<h1>Available Videos</h1>\n")
+        f.write("<h1>Available Audio Tracks</h1>\n")
         f.write("<ul>\n")
         music_files = list(filter(lambda x: x.suffix == ".mp3", reversed(sorted(Path(server_dir).iterdir(), key=os.path.getmtime))))
         for music_file in music_files:
