@@ -79,11 +79,11 @@ def download_video(url):
     os.chdir(build_dir)
     title = get_title_from_url(url)
     log(f"Downloading video: {title}... ")
-    subprocess.run([f"/usr/local/bin/yt-dlp", url, "-o", title], stdout=subprocess.PIPE)
+    subprocess.run([f"/usr/local/bin/yt-dlp", url, "-o", title])
     log("Done!\n")
     video_name = find_processed_file(title)
     log("Converting video to .mp3 ... ")
-    subprocess.run([f"/usr/bin/ffmpeg", "-i", video_name, f"{title}.mp3"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.run([f"/usr/bin/ffmpeg", "-i", video_name, f"{title}.mp3"])
     log("Done!\n")
     os.chdir(cwd)
 
