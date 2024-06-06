@@ -64,6 +64,7 @@ def make_index():
     with open(f"{server_dir}/index.html", "w") as f:
         log(f"Building index ... ")
         f.write("<html><head></head>\n")
+        f.write("<a href=\"http://www.wuteri.ch/misc/load.php\" style=\" font-size: 30px;\">Load song</a>\n")
         f.write("<h1>Available Audio Tracks</h1>\n")
         f.write("<ul>\n")
         music_files = list(filter(lambda x: x.suffix == ".mp3", reversed(sorted(Path(server_dir).iterdir(), key=os.path.getmtime))))
@@ -71,7 +72,6 @@ def make_index():
             f.write(f"<li style=\"font-size: 30px; padding-bottom: 10px\"><a href=\"http://wuteri.ch/misc/{music_file.name}\">{music_file.name}</a></li>")
         f.write("</ul>\n")
 
-        f.write("<a href=\"http://www.wuteri.ch/misc/load.php\" style=\" font-size: 30px;\">Load song</a>\n")
         f.write("</html>")
 
     log("Done!\n")
@@ -81,7 +81,7 @@ def download_video(url):
     os.chdir(build_dir)
     title = get_title_from_url(url)
     log(f"Downloading video: {title}... ")
-    subprocess.run([f"/usr/local/bin/yt-dlp", url, "-o", title])
+    subprocess.run([f"/usr/local/bin/yt-dlp", url, "--no-playlist", "-o", title])
     log("Done!\n")
     video_name = find_processed_file(title)
     log("Converting video to .mp3 ... ")
