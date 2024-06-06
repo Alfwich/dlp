@@ -62,9 +62,13 @@ def prune_files():
 
 def make_index():
     music_files = list(map(lambda x: x.name, filter(lambda x: x.suffix == ".mp3", reversed(sorted(Path(server_dir).iterdir(), key=os.path.getmtime)))))
-    with open(f"{server_dir}/data.js", "w") as f:
+    log(f"Building index at {server_dir}/data.js ...")
+
+    with open(f"{server_dir}/data.generated.js", "w") as data_file:
+        log(f"Dumping index: {music_files}")
         array = json.dumps(music_files)
-        f.write(f"_data={array};")
+        data_file.write(f"_data={array};")
+        log(f"Dumped index")
 
     log("Done!\n")
 
