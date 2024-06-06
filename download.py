@@ -75,7 +75,6 @@ def download_video(url):
     os.chdir(cwd)
 
 def main(video_url):
-    print(video_url)
     prepare_dir()
     download_video(video_url)
     move_files()
