@@ -52,7 +52,7 @@ def move_files():
             subprocess.run(["cp", f"{build_dir}/{f}", f"{server_dir}/{f}"])
 
 def prune_files():
-    files_to_prune = list(filter(lambda x: x.suffix == ".mp3", reversed(sorted(Path(server_dir).iterdir(), key=os.path.getmtime))))[10:]
+    files_to_prune = list(filter(lambda x: x.suffix == ".mp3", reversed(sorted(Path(server_dir).iterdir(), key=os.path.getmtime))))[100:]
 
     if len(files_to_prune) > 0:
         log(f"Pruning {len(files_to_prune)} files ... ")
