@@ -64,7 +64,7 @@ def make_index():
         f.write("<html><head></head>\n")
         f.write("<h1>Available Videos</h1>\n")
         f.write("<ul>\n")
-        music_files = list(filter(lambda x: x.suffix == ".mp3", sorted(Path(server_dir).iterdir(), key=os.path.getmtime)))
+        music_files = list(filter(lambda x: x.suffix == ".mp3", reversed(sorted(Path(server_dir).iterdir(), key=os.path.getmtime))))
         for music_file in music_files:
             f.write(f"<li style=\"font-size: 30px; padding-bottom: 10px\"><a href=\"http://wuteri.ch/misc/{music_file.name}\">{music_file.name}</a></li>")
         f.write("</ul>\n")
