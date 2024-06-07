@@ -11,6 +11,8 @@ import string
 
 from pathlib import Path
 
+sys.path.append("/home/pi/.local/lib/python3.7/site-packages")
+
 from yt_dlp import YoutubeDL
 
 build_dir = "build"
