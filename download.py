@@ -18,14 +18,8 @@ def log(msg):
     sys.stdout.write(msg)
     sys.stdout.flush()
 
-def get_title_from_url(url):
-    output = subprocess.getoutput(f"/usr/local/bin/yt-dlp --print filename {url}").splitlines()
-    file_name = "".join(output[-1].split("[")[0:-1])
-    formatted_file_name = "".join(c for c in file_name if (c.isalpha() or c.isdigit() or c==' ') and c in string.printable).rstrip().replace("  ", " ").replace(" ", "-")
-    print(output)
-    print(file_name)
-    print(formatted_file_name)
-    return formatted_file_name
+def fs_format(name):
+    return "".join(c for c in name if (c.isalpha() or c.isdigit() or c==' ') and c in string.printable).rstrip().replace("  ", " ").replace(" ", "-")
 
 def prepare_dir():
     # Ensure we are starting from a clean build dir
@@ -37,10 +31,10 @@ def prepare_dir():
 def cleanup_dir():
     shutil.rmtree(build_dir)
 
-def find_processed_file(name):
+def find_processed_file():
     for f in os.listdir("."):
-        if f.startswith(f"{name}."):
-            return f
+        final_name = "-".join(fs_format(os.path.splitext(f)[0]).split("-")[0:-1])
+        return {"raw": f, "final": final_name}
 
 def move_files():
     for f in os.listdir(build_dir):
@@ -57,31 +51,30 @@ def prune_files():
             f.unlink()
         log(f"Done!\n")
 
-def download_video(url):
+def download_video(url, final_type):
     cwd = os.getcwd()
     os.chdir(build_dir)
-    title = get_title_from_url(url)
-    log(f"Downloading video: {title}... ")
-    subprocess.run([f"/usr/local/bin/yt-dlp", url, "--no-playlist", "-o", title])
+    log(f"Downloading video: [{url}] ... ")
+    subprocess.run([f"/usr/local/bin/yt-dlp", url, "--no-playlist"])
     log("Done!\n")
-    video_name = find_processed_file(title)
-    log("Converting video to .mp3 ... ")
-    subprocess.run([f"/usr/bin/ffmpeg", "-i", video_name, f"{title}.mp3"], stderr=subprocess.STDOUT)
+    title = find_processed_file()
+    log(f"Converting video to .{final_type} ... ")
+    subprocess.run([f"/usr/bin/ffmpeg", "-i", title["raw"], f'{title["final"]}.{final_type}'], stderr=subprocess.STDOUT)
     log("Done!\n")
     os.chdir(cwd)
 
-def main(video_url):
+def main(video_url, final_type):
     prepare_dir()
-    download_video(video_url)
+    download_video(video_url, final_type)
     move_files()
     prune_files()
     cleanup_dir()
     log("Done!\n")
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        log("Expected usage: ./download.py <url>\n")
+    if len(sys.argv) < 3:
+        log("Expected usage: ./download.py <url> <type>\n")
     else:
-        main(sys.argv[1])
+        main(sys.argv[1], sys.argv[2])
 
 

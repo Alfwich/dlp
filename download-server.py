@@ -5,7 +5,7 @@ import sys
 from download import main as dl_main
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        log("Expected usage: ./download-server.py <url>\n")
+    if len(sys.argv) < 3:
+        log("Expected usage: ./download-server.py <url> <type>\n")
     else:
-        dl_main(base64.b64decode(sys.argv[1]))
+        dl_main(base64.b64decode(sys.argv[1]),base64.b64decode(sys.argv[2]))
