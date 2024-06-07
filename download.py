@@ -33,17 +33,19 @@ def cleanup_dir():
 
 def find_processed_file():
     for f in os.listdir("."):
-        final_name = "-".join(fs_format(os.path.splitext(f)[0]).split("-")[0:-1])
-        return {"raw": f, "final": final_name}
+        return f
 
-def move_files():
+def get_name_from_file(f):
+        return "-".join(fs_format(os.path.splitext(f)[0]).split("-")[0:-1])
+
+def move_files(final_type):
     for f in os.listdir(build_dir):
-        if f.endswith(".mp3"):
+        if f.endswith(final_type):
             log(f"Installing {f}\n") 
             subprocess.run(["cp", f"{build_dir}/{f}", f"{server_dir}/{f}"])
 
 def prune_files():
-    files_to_prune = list(filter(lambda x: x.suffix == ".mp3", reversed(sorted(Path(server_dir).iterdir(), key=os.path.getmtime))))[100:]
+    files_to_prune = list(filter(lambda x: x.suffix == ".mp3" or x.suffix == ".mp4", reversed(sorted(Path(server_dir).iterdir(), key=os.path.getmtime))))[20:]
 
     if len(files_to_prune) > 0:
         log(f"Pruning {len(files_to_prune)} files ... ")
@@ -57,16 +59,18 @@ def download_video(url, final_type):
     log(f"Downloading video: [{url}] ... ")
     subprocess.run([f"/usr/local/bin/yt-dlp", url, "--no-playlist"])
     log("Done!\n")
-    title = find_processed_file()
+    video_file = find_processed_file()
+    title = f"{get_name_from_file(video_file)}.{final_type}"
     log(f"Converting video to .{final_type} ... ")
-    subprocess.run([f"/usr/bin/ffmpeg", "-i", title["raw"], f'{title["final"]}.{final_type}'], stderr=subprocess.STDOUT)
+    subprocess.run([f"/usr/bin/ffmpeg", "-i", video_file, title], stderr=subprocess.STDOUT)
     log("Done!\n")
     os.chdir(cwd)
 
 def main(video_url, final_type):
+    log(f"Executing download url: {video_url}, type: {final_type}")
     prepare_dir()
     download_video(video_url, final_type)
-    move_files()
+    move_files(final_type)
     prune_files()
     cleanup_dir()
     log("Done!\n")
