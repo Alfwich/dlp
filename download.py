@@ -53,21 +53,26 @@ def prune_files():
             f.unlink()
         log(f"Done!\n")
 
+def exec_cmd(cmd):
+    pretty_cmd = " ".join(cmd)
+    log(f"Executing command: {pretty_cmd}\n")
+    subprocess.run(cmd, stderr=subprocess.STDOUT)
+
 def download_video(url, final_type):
     cwd = os.getcwd()
     os.chdir(build_dir)
-    log(f"Downloading video: [{url}] ... ")
-    subprocess.run([f"/usr/local/bin/yt-dlp", url, "--no-playlist"])
+    log(f"Downloading video: [{url}] ... \n")
+    exec_cmd([f"/usr/local/bin/yt-dlp", url, "--no-playlist"])
     log("Done!\n")
     video_file = find_processed_file()
     title = f"{get_name_from_file(video_file)}.{final_type}"
-    log(f"Converting video to .{final_type} ... ")
-    subprocess.run([f"/usr/bin/ffmpeg", "-i", video_file, title], stderr=subprocess.STDOUT)
+    log(f"Converting video to .{final_type} ... \n")
+    exec_cmd([f"/usr/bin/ffmpeg", "-i", video_file, "--codec", "copy", title])
     log("Done!\n")
     os.chdir(cwd)
 
 def main(video_url, final_type):
-    log(f"Executing download url: {video_url}, type: {final_type}")
+    log(f"Executing download url: {video_url}, type: {final_type}\n")
     prepare_dir()
     download_video(video_url, final_type)
     move_files(final_type)
