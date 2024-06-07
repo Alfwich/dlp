@@ -11,10 +11,6 @@ import string
 
 from pathlib import Path
 
-sys.path.append("/home/pi/.local/lib/python3.7/site-packages")
-
-from yt_dlp import YoutubeDL
-
 build_dir = "build"
 server_dir = "/www/wuteri.ch/misc"
 
@@ -23,13 +19,13 @@ def log(msg):
     sys.stdout.flush()
 
 def get_title_from_url(url):
-    with YoutubeDL() as ydl:
-        info_dict = ydl.extract_info(url, download=False)
-        video_url = info_dict.get("url", None)
-        video_id = info_dict.get("id", None)
-        video_title = info_dict.get('title', None)
-        print("Title: " + video_title) # <= Here, you got the video title
-        return "".join(c for c in video_title if (c.isalpha() or c.isdigit() or c==' ') and c in string.printable).rstrip().replace("  ", " ").replace(" ", "-")
+    output = subprocess.getoutput(f"/usr/local/bin/yt-dlp --print filename {url}").splitlines()
+    file_name = "".join(output[-1].split("[")[0:-1])
+    formatted_file_name = "".join(c for c in file_name if (c.isalpha() or c.isdigit() or c==' ') and c in string.printable).rstrip().replace("  ", " ").replace(" ", "-")
+    print(output)
+    print(file_name)
+    print(formatted_file_name)
+    return formatted_file_name
 
 def prepare_dir():
     # Ensure we are starting from a clean build dir
