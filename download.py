@@ -61,15 +61,22 @@ def exec_cmd(cmd):
 def download_video(url, final_type):
     cwd = os.getcwd()
     os.chdir(build_dir)
-    log(f"Downloading video: [{url}] ... \n")
-    exec_cmd([f"/usr/local/bin/yt-dlp", url, "--no-playlist"])
+    acquire_yt_dlp()
+    log(f"Downloading video: [{url}] as {final_type} ... \n")
+    exec_cmd(["./yt-dlp", url, "--no-playlist"])
     log("Done!\n")
     video_file = find_processed_file()
     title = f"{get_name_from_file(video_file)}.{final_type}"
     log(f"Converting video to .{final_type} ... \n")
-    exec_cmd([f"/usr/bin/ffmpeg", "-i", video_file, "--codec", "copy", title])
+    video_options = ["--codec", "copy"] if final_type is "mp4" else []
+    exec_cmd([f"/usr/bin/ffmpeg", "-i", video_file] + video_options + [title])
     log("Done!\n")
     os.chdir(cwd)
+
+yt_dlp_download_url="https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux_armv7l"
+def acquire_yt_dlp():
+    exec_cmd(["wget", yt_dlp_download_url, "-O", "yt-dlp"])
+    exec_cmd(["chmod", "775", "yt-dlp"])
 
 def main(video_url, final_type):
     log(f"Executing download url: {video_url}, type: {final_type}\n")
