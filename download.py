@@ -31,9 +31,10 @@ def prepare_dir():
 def cleanup_dir():
     shutil.rmtree(build_dir)
 
-def find_processed_file():
+def find_processed_file(final_type):
     for f in os.listdir("."):
-        return f
+        if f.endswith(final_type):
+            return f
 
 def get_name_from_file(f):
         return "-".join(fs_format(os.path.splitext(f)[0]).split("-")[0:-1])
@@ -65,7 +66,7 @@ def download_video(url, final_type):
     log(f"Downloading video: [{url}] as {final_type} ... \n")
     exec_cmd(["./yt-dlp", url, "--no-playlist"])
     log("Done!\n")
-    video_file = find_processed_file()
+    video_file = find_processed_file(final_type)
     title = f"{get_name_from_file(video_file)}.{final_type}"
     log(f"Converting video to .{final_type} ... \n")
     video_options = ["--codec", "copy"] if final_type is "mp4" else []
