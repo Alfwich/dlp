@@ -54,7 +54,7 @@ def move_files(final_type):
     for f in os.listdir(build_dir):
         if f.endswith(final_type):
             log(f"Installing {f}\n") 
-            subprocess.run(["cp", f"{build_dir}/{f}", f"{server_dir}/content/{f}"])
+            exec_cmd(["cp", f"{build_dir}/{f}", f"{server_dir}/content/{f}"])
 
 def prune_files():
     files_to_prune = list(reversed(sorted(Path(f"{server_dir}/content").iterdir(), key=os.path.getmtime)))[20:]
