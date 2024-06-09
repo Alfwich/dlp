@@ -13,11 +13,14 @@ import stat
 
 from pathlib import Path
 
+from datetime import datetime
+
 build_dir = "build"
 server_dir = "/www/wuteri.ch/misc"
 
 def log(msg):
-    sys.stdout.write(msg)
+    preamble = f"[datetime.now().strftime("%m/%d/%Y, %H:%M:%S")]"
+    sys.stdout.write(f"{preamble}{msg}")
     sys.stdout.flush()
 
 def fs_format(name):
@@ -74,7 +77,7 @@ def download_video(url, final_type):
     existing_file = Path(f"{server_dir}/content/{title}")
     if not existing_file.exists():
         log(f"Converting video to .{final_type} ... \n")
-        video_options = ["--codec", "copy"] if final_type is "mp4" else []
+        video_options = ["-preset", "ultrafast"] if final_type is "mp4" else []
         exec_cmd([f"/usr/bin/ffmpeg", "-i", video_file] + video_options + [title])
         log("Done!\n")
     else:

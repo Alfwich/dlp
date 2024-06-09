@@ -2,11 +2,9 @@
 
 import base64
 import sys
-from download import main as dl_main
 
-def log(msg):
-    sys.stdout.write(msg)
-    sys.stdout.flush()
+from download import main as dl_main
+from download import log 
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
