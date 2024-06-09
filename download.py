@@ -19,8 +19,8 @@ build_dir = "build"
 server_dir = "/www/wuteri.ch/misc"
 
 def log(msg):
-    preamble = f"[{datetime.now().strftime('%m/%d/%Y, %H:%M:%S')}]"
-    sys.stdout.write(f"{preamble}{msg}")
+    preamble = f"[{datetime.now().strftime('%H:%M:%S:%f')}]"
+    sys.stdout.write(f"{preamble} {msg}")
     sys.stdout.flush()
 
 def fs_format(name):
