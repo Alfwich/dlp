@@ -12,4 +12,7 @@ if __name__ == "__main__":
     if len(sys.argv) < 3:
         log("Expected usage: ./download-server.py <url> <type>\n")
     else:
-        dl_main(base64.b64decode(sys.argv[1]).decode("utf-8"), base64.b64decode(sys.argv[2]).decode("utf-8"))
+        url = base64.b64decode(sys.argv[1]).decode("utf-8")
+        desired_type = base64.b64decode(sys.argv[2]).decode("utf-8")
+
+        dl_main(url, desired_type)
