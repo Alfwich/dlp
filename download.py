@@ -38,7 +38,7 @@ def cleanup_dir():
 
 
 def find_processed_file():
-    for f in os.listdir("."):
+    for f in os.listdir(f"{server_dir}/{build_dir}"):
         if f != 'yt-dlp':
             return f
 
@@ -46,6 +46,9 @@ def get_name_from_file(f):
         return "-".join(fs_format(os.path.splitext(f)[0]).split("-")[0:-1])
 
 def move_files(final_type):
+    if final_type == "any":
+        final_type = Path(find_processed_file()).suffix.split(".")[-1]
+
     for f in os.listdir(build_dir):
         if f.endswith(final_type):
             log(f"Installing {f}\n") 
@@ -65,14 +68,7 @@ def exec_cmd(cmd):
     log(f"Executing command: {pretty_cmd}\n")
     subprocess.run(cmd, stderr=subprocess.STDOUT)
 
-def download_video(url, final_type):
-    cwd = os.getcwd()
-    os.chdir(build_dir)
-    acquire_yt_dlp()
-    log(f"Downloading video: [{url}] as {final_type} ... \n")
-    exec_cmd(["./yt-dlp", url, "--no-playlist"])
-    log("Done!\n")
-    video_file = find_processed_file()
+def convert_video(video_file, final_type):
     title = f"{get_name_from_file(video_file)}.{final_type}"
     existing_file = Path(f"{server_dir}/content/{title}")
     if not existing_file.exists():
@@ -80,8 +76,19 @@ def download_video(url, final_type):
         video_options = ["-preset", "ultrafast"] if final_type is "mp4" else []
         exec_cmd([f"/usr/bin/ffmpeg", "-i", video_file] + video_options + [title])
         log("Done!\n")
-    else:
-        log(f"Found existing content file, aborting.\n")
+
+def download_video(url, final_type):
+    cwd = os.getcwd()
+    os.chdir(build_dir)
+    acquire_yt_dlp()
+    log(f"Downloading video: [{url}] as {final_type} ... \n")
+    exec_cmd(["./yt-dlp", url, "--no-playlist"])
+    log("Done downloading!\n")
+
+    if final_type != "any":
+        video_file = find_processed_file()
+        convert_video(video_file, final_type)
+
     os.chdir(cwd)
 
 yt_binary_name = "yt-dlp"
@@ -105,7 +112,7 @@ def main(video_url, final_type):
     move_files(final_type)
     prune_files()
     cleanup_dir()
-    log("Done!\n")
+    log("Done adding video!\n")
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
