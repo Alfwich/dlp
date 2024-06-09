@@ -30,6 +30,8 @@ def prepare_dir():
     if not os.path.exists(build_dir):
         os.mkdir(build_dir)
 
+    exec_cmd(["df", "-h"])
+
 
 def cleanup_dir():
     files_to_prune = list(filter(lambda x: x.name != 'yt-dlp', Path(f"{server_dir}/{build_dir}").iterdir()))
@@ -55,7 +57,7 @@ def move_files(final_type):
             subprocess.run(["cp", f"{build_dir}/{f}", f"{server_dir}/content/{f}"])
 
 def prune_files():
-    files_to_prune = list(filter(lambda x: x.suffix == ".mp3" or x.suffix == ".mp4", reversed(sorted(Path(server_dir).iterdir(), key=os.path.getmtime))))[20:]
+    files_to_prune = list(reversed(sorted(Path(f"{server_dir}/content").iterdir(), key=os.path.getmtime)))[20:]
 
     if len(files_to_prune) > 0:
         log(f"Pruning {len(files_to_prune)} files ... ")
@@ -88,6 +90,10 @@ def download_video(url, final_type):
     if final_type != "any":
         video_file = find_processed_file()
         convert_video(video_file, final_type)
+    else:
+        video_file = find_processed_file()
+        renamed_file = f"{get_name_from_file(video_file)}{Path(video_file).suffix}"
+        exec_cmd(["mv", video_file, renamed_file])
 
     os.chdir(cwd)
 
@@ -99,11 +105,18 @@ def acquire_yt_dlp():
     existing_yt_dlp = Path(yt_binary_name)
     if existing_yt_dlp.exists():
         log(f"Found yt-dlp (age={time.time() - os.path.getmtime(yt_binary_name)}s)\n")
+
     if not existing_yt_dlp.exists() or time.time() - os.path.getmtime(yt_binary_name) > yt_dlp_ttl:
+        yt_dlp_tmp_file = f"{yt_binary_name}.tmp"
         log("Downloading ty-dlp\n")
-        exec_cmd(["wget", yt_dlp_download_url, "-O", "yt-dlp"])
-        exec_cmd(["chmod", "775", "yt-dlp"])
-        exec_cmd(["touch", "yt-dlp"])
+        exec_cmd(["wget", yt_dlp_download_url, "-O", yt_dlp_tmp_file])
+        if Path(yt_dlp_tmp_file).exists():
+            exec_cmd(["chmod", "775", yt_dlp_tmp_file])
+            exec_cmd(["touch", yt_dlp_tmp_file])
+            exec_cmd(["mv", yt_dlp_tmp_file, yt_binary_name])
+
+        else: 
+            log("Could not acquire yt-dlp binary\n")
 
 def main(video_url, final_type):
     log(f"Executing download url: {video_url}, type: {final_type}\n")
