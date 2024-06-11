@@ -41,9 +41,14 @@ app.load_data = (url, type) => {
 	}
 }
 
-app.load_job_log = () => {
+app.load_job_log = (request_all=false) => {
 	if (app.data.id) {
-		fetch("processing/" + app.data.id + "/log.txt", { method: "GET"} )
+		fetch("processing/" + app.data.id + "/log.txt", { 
+			method: "GET",
+			headers: request_all ? {} : {
+				"Range": "-128"
+			}
+		} )
 		.then((response) => response.text())
 		.then((body) => {
 			if (app.on_job_log_loaded) {
@@ -55,13 +60,15 @@ app.load_job_log = () => {
 
 app.load_job_status = () => {
 	if (app.data.id) {
-		fetch("processing/" + app.data.id + "/done", { method: "GET"} )
+		fetch("processing/" + app.data.id + "/done", { 
+			method: "GET", 
+		} )
 		.then((response) => {
 			if (app.on_job_status_loaded) {
 				app.on_job_status_loaded(response.status == 200);
 			}
 
-			app.load_job_log();
+			app.load_job_log(response.status == 200);
 			if (response.status != 200) {
 				setTimeout(() => {
 					app.load_job_status();

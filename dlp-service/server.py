@@ -16,7 +16,7 @@ from threading import Thread
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from datetime import datetime
 
-dlp_directory = "/usr/www/yt-download"
+dlp_directory = "/usr/www/dlp-client"
 web_server_dir = "/www/wuteri.ch/dlp"
 
 def log(msg):
