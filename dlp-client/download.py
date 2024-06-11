@@ -16,7 +16,8 @@ from pathlib import Path
 from datetime import datetime
 
 build_dir = "build"
-server_dir = "/www/wuteri.ch/dlp"
+#server_dir = "/www/wuteri.ch/dlp"
+server_dir = "/home/pi/projects/dlp/dlp-web-server"
 
 def log(msg):
     preamble = f"[{datetime.now().strftime('%H:%M:%S:%f')}]"
@@ -27,8 +28,8 @@ def fs_format(name):
     return "".join(c for c in name if (c.isalpha() or c.isdigit() or c==' ') and c in string.printable).rstrip().replace("  ", " ").replace(" ", "-")
 
 def prepare_dir(scope):
-    if not os.path.exists(build_dir):
-        os.mkdir(build_dir)
+    if not os.path.exists(f"{server_dir}/{build_dir}"):
+        os.mkdir(f"{server-dir}/{build_dir}")
 
     if not os.path.exists(f"{server_dir}/content/{scope}"):
         os.mkdir(f"{server_dir}/content/{scope}")
@@ -36,7 +37,10 @@ def prepare_dir(scope):
     exec_cmd(["df", "-h"])
 
 def find_downloaded_file():
-    for f in os.listdir(f"{server_dir}/{build_dir}"):
+    path = f"{server_dir}/{build_dir}"
+    log(f"Looking for file in {path}\n")
+    for f in os.listdir(path):
+        log(f"{f}\n")
         if f != 'yt-dlp':
             return f
 
