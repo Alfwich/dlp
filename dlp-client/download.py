@@ -16,8 +16,8 @@ from pathlib import Path
 from datetime import datetime
 
 build_dir = "build"
-#server_dir = "/www/wuteri.ch/dlp"
-server_dir = "/home/pi/projects/dlp/dlp-web-server"
+server_dir = "/www/wuteri.ch/dlp"
+#server_dir = "/home/pi/projects/dlp/dlp-web-server"
 
 def log(msg):
     preamble = f"[{datetime.now().strftime('%H:%M:%S:%f')}]"
