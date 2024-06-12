@@ -7,7 +7,7 @@ app.on_job_log_loaded = null;
 app.on_job_status_loaded = null;
 
 app.is_loading = false;
-app.log_headers = null;
+app.log_bytes_recv = 0;
 
 app.set_scope = (new_scope) => {
 	app.scope = new_scope;
@@ -15,6 +15,7 @@ app.set_scope = (new_scope) => {
 
 app.load_data = (url, type) => {
 	if (!app.is_loading) {
+		app.log_bytes_recv = 0;
 		app.is_loading = fetch("data.php", {
 			method: "POST",
 			body: JSON.stringify({
@@ -42,20 +43,30 @@ app.load_data = (url, type) => {
 	}
 }
 
-app.load_job_log = (request_all=false) => {
+app.load_job_log = (start_bytes=0) => {
 	if (app.data.id) {
-		fetch("processing/" + app.data.id + "/log.txt", {method: "GET"})
+		fetch("processing/" + app.data.id + "/log.txt", {
+			method: "GET",
+			headers: {
+				"Range": "bytes=" + start_bytes + "-"
+			},
+		})
 		.then((response) => {
 			if (response.status >= 200 && response.status < 300) {
-				app.log_headers = response.headers;
+				var content_range = response.headers.get("Content-Range").split("/");
+				if (content_range.length > 1) {
+					var next_byte = content_range[1];
+					app.log_bytes_recv = parseInt(next_byte);
+				}
+				return response.text();
+			} else {
+				return "";
 			}
-			return response.text();
 		})
 		.then((body) => {
 			if (app.on_job_log_loaded) {
 				app.on_job_log_loaded(body);
 			}
-			app.log_headers = null;
 		});
 	}
 }
@@ -70,11 +81,11 @@ app.load_job_status = () => {
 				app.on_job_status_loaded(response.status == 200);
 			}
 
-			app.load_job_log(response.status == 200);
+			app.load_job_log(app.log_bytes_recv);
 			if (response.status != 200) {
 				setTimeout(() => {
 					app.load_job_status();
-				}, 1000);
+				}, 250);
 			}
 		});
 	}

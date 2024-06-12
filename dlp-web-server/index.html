@@ -39,7 +39,7 @@
 				};
 
 				app.on_job_log_loaded = (data) => {
-					document.getElementById("tool_output").innerHTML = data;
+					document.getElementById("tool_output").innerHTML += data;
 					document.getElementById("tool_output").scrollTop = document.getElementById("tool_output").scrollHeight;
 				};
 
@@ -60,7 +60,6 @@
 			};
 
 			function clear_videos() {
-				var list = document.getElementById("audio-tracks").innerHTML = "";
 				document.getElementById("tool_output").innerHTML = "";
 			}
 
