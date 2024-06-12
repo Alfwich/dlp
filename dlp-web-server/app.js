@@ -7,6 +7,7 @@ app.on_job_log_loaded = null;
 app.on_job_status_loaded = null;
 
 app.is_loading = false;
+app.log_headers = null;
 
 app.set_scope = (new_scope) => {
 	app.scope = new_scope;
@@ -43,17 +44,18 @@ app.load_data = (url, type) => {
 
 app.load_job_log = (request_all=false) => {
 	if (app.data.id) {
-		fetch("processing/" + app.data.id + "/log.txt", { 
-			method: "GET",
-			headers: request_all ? {} : {
-				"Range": "-128"
+		fetch("processing/" + app.data.id + "/log.txt", {method: "GET"})
+		.then((response) => {
+			if (response.status >= 200 && response.status < 300) {
+				app.log_headers = response.headers;
 			}
-		} )
-		.then((response) => response.text())
+			return response.text();
+		})
 		.then((body) => {
 			if (app.on_job_log_loaded) {
 				app.on_job_log_loaded(body);
 			}
+			app.log_headers = null;
 		});
 	}
 }

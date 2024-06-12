@@ -20,7 +20,6 @@ function sort_fn($fileA, $fileB) {
 };
 
 $job_id = null;
-$tool_output = "";
 $files = array();
 
 $raw_data = file_get_contents('php://input');
@@ -75,7 +74,6 @@ $data = array(
 	"id" => $id,
 	"videos" => array_values($files),
 	"scope" => $scope,
-	"tool_output" => $tool_output,
 );
 
 echo json_encode($data);

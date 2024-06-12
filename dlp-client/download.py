@@ -55,6 +55,7 @@ def move_files(scope, final_type):
         if f.endswith(final_type):
             log(f"Installing {f}\n") 
             exec_cmd(["cp", f"{build_dir}/{f}", f"{server_dir}/content/{scope}/{f}"])
+            exec_cmd(["chmod", "777", f"{server_dir}/content/{scope}", "-R"])
 
 def cleanup_dir():
     files_to_prune = list(filter(lambda x: x.name != 'yt-dlp', Path(f"{server_dir}/{build_dir}").iterdir()))
