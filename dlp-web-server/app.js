@@ -53,10 +53,13 @@ app.load_job_log = (start_bytes=0) => {
 		})
 		.then((response) => {
 			if (response.status >= 200 && response.status < 300) {
-				var content_range = response.headers.get("Content-Range").split("/");
-				if (content_range.length > 1) {
-					var next_byte = content_range[1];
-					app.log_bytes_recv = parseInt(next_byte);
+				var content_range_header = response.headers.get("Content-Range");
+				var content_range_parts = !!content_range_header ? response.headers.get("Content-Range").split("/") : [];
+				if (content_range_parts.length > 1) {
+					var next_byte = parseInt(content_range_parts[1]);
+					if (!isNaN(next_byte)) {
+						app.log_bytes_recv = parseInt(next_byte);
+					}
 				}
 				return response.text();
 			} else {
