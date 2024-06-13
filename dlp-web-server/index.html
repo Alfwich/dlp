@@ -1,111 +1,115 @@
 <html>
-	<head>
-		<style>
+
+<head>
+	<style>
 		a {
-		    padding-right: 10px;
+			padding-right: 10px;
 		}
-		</style>
-		<script type="text/javascript" src="./app.js"></script>
-		<script type="text/javascript">
-			window.onload = function() {
-				app.on_data_loaded = () => {
-					var list = document.getElementById("audio-tracks");
-					list.innerHTML = "";
-					var data = app.data;
-					var scope = app.scope;
-					var i = 0;
-					if (data["videos"].length > 0) {
-						data["videos"].forEach((track_name) => {
-							var li = document.createElement("li");
-							var link = document.createElement("a");
-							link.innerText = track_name + "  (" + i++ + ")";
-							link.setAttribute("href", "http://wuteri.ch/dlp/content/" + scope + "/" + track_name);
-							link.setAttribute("target", "_blank");
-							li.appendChild(link);
-							li.setAttribute("style", "font-size: 30px; padding-bottom: 10px");
-							list.appendChild(li);
-						});
-					} else {
-						list.innerHTML = "No data :(";
-					}
-
-					if (!data["id"]) {
-						enable_inputs();
-					} else {
-						document.getElementById("tool_output").innerHTML = "Starting job " + data["id"] + "\n";
-					}
-
-				        document.getElementById("video_url").value = "";
-				};
-
-				app.on_job_log_loaded = (data) => {
-					document.getElementById("tool_output").innerHTML += data;
-					document.getElementById("tool_output").scrollTop = document.getElementById("tool_output").scrollHeight;
-				};
-
-				app.on_job_status_loaded = (is_complete) => {
-					if (is_complete) {
-						app.load_data();
-						enable_inputs();
-					}
-				};
-				if (window.localStorage.getItem("scope")) {
-					var scope = window.localStorage.getItem("scope");
-					document.getElementById("scope").value = scope;
-					app.scope = scope;
+	</style>
+	<script type="text/javascript" src="./app.js"></script>
+	<script type="text/javascript">
+		window.onload = function () {
+			app.on_data_loaded = () => {
+				var list = document.getElementById("audio-tracks");
+				list.innerHTML = "";
+				var data = app.data;
+				var scope = app.scope;
+				var i = 0;
+				if (data["videos"].length > 0) {
+					data["videos"].forEach((track_name) => {
+						var li = document.createElement("li");
+						var link = document.createElement("a");
+						link.innerText = track_name + "  (" + i++ + ")";
+						link.setAttribute("href", "http://wuteri.ch/dlp/content/" + scope + "/" + track_name);
+						link.setAttribute("target", "_blank");
+						li.appendChild(link);
+						li.setAttribute("style", "font-size: 30px; padding-bottom: 10px");
+						list.appendChild(li);
+					});
 				} else {
-					document.getElementById("scope").value = app.scope;
+					list.innerHTML = "No data :(";
 				}
-				app.load_data();
+
+				if (!data["id"]) {
+					enable_inputs();
+				} else {
+					document.getElementById("tool_output").innerHTML = "Starting job " + data["id"] + "\n";
+				}
+
+				document.getElementById("video_url").value = "";
 			};
 
-			function clear_videos() {
-				document.getElementById("tool_output").innerHTML = "";
-			}
-
-			function disable_inputs() {
-			        document.getElementById("add_video_button").disabled = true;
-			        document.getElementById("remove_video_button").disabled = true;
-			        document.getElementById("scope").disabled = true;
-			}
-
-			function enable_inputs() {
-			        document.getElementById("add_video_button").disabled = false;
-			        document.getElementById("remove_video_button").disabled = false;
-			        document.getElementById("scope").disabled = false;
-			}
-
-			function load_video() {
-				disable_inputs();
-				var url = document.getElementById("video_url").value;
-				var type = document.getElementById("video_type").value;
-				app.load_data(url, type);
-				clear_videos();
+			app.on_job_log_loaded = (data) => {
+				document.getElementById("tool_output").innerHTML += data;
+				document.getElementById("tool_output").scrollTop = document.getElementById("tool_output").scrollHeight;
 			};
 
-			function remove_video() {
-				disable_inputs();
-				var video_idx = document.getElementById("video_idx").value;
-				app.remove_video(video_idx);
+			app.on_job_status_loaded = (status) => {
+				if (status == 200) {
+					app.load_data();
+					enable_inputs();
+				}
 			};
 
-			function change_scope() {
-				var scope = document.getElementById("scope").value;
-				var simple_scope = scope.replace(/[^a-zA-Z0-9]/g, '').substring(0, 15);
-				window.localStorage.setItem("scope", simple_scope);
-				document.getElementById("scope").value = simple_scope;
-				app.set_scope(simple_scope);
-				app.load_data();
-				clear_videos();
+			if (window.localStorage.getItem("scope")) {
+				var scope = window.localStorage.getItem("scope");
+				document.getElementById("scope").value = scope;
+				app.scope = scope;
+			} else {
+				document.getElementById("scope").value = app.scope;
 			}
-		</script>
-	</head>
-	<body>
+			app.load_data();
+		};
+
+		function clear_videos() {
+			document.getElementById("tool_output").innerHTML = "";
+		}
+
+		function disable_inputs() {
+			document.getElementById("add_video_button").disabled = true;
+			document.getElementById("remove_video_button").disabled = true;
+			document.getElementById("scope").disabled = true;
+		}
+
+		function enable_inputs() {
+			document.getElementById("add_video_button").disabled = false;
+			document.getElementById("remove_video_button").disabled = false;
+			document.getElementById("scope").disabled = false;
+		}
+
+		function load_video() {
+			disable_inputs();
+			var url = document.getElementById("video_url").value;
+			var type = document.getElementById("video_type").value;
+			app.load_data(url, type);
+			clear_videos();
+		};
+
+		function remove_video() {
+			disable_inputs();
+			var video_idx = document.getElementById("video_idx").value;
+			app.remove_video(video_idx);
+		};
+
+		function change_scope() {
+			var scope = document.getElementById("scope").value;
+			var simple_scope = scope.replace(/[^a-zA-Z0-9]/g, '').substring(0, 15);
+			window.localStorage.setItem("scope", simple_scope);
+			document.getElementById("scope").value = simple_scope;
+			app.set_scope(simple_scope);
+			app.load_data();
+			clear_videos();
+		}
+	</script>
+</head>
+
+<body>
 	<h1>Available Content</h1>
 	<ul id="audio-tracks">
 	</ul>
 
-	<div id="control_panel" style="position: fixed; right: 10px; bottom: 10px; padding: 15px; background: white; border-radius: 5px; border: 1px solid #AAA;">
+	<div id="control_panel"
+		style="position: fixed; right: 10px; bottom: 10px; padding: 15px; background: white; border-radius: 5px; border: 1px solid #AAA;">
 		<label for="name">Scope</label>
 		<input id="scope" type="text" onchange="change_scope()">
 		<h2>Add Video</h2>
@@ -114,24 +118,24 @@
 
 		<label for="type">Type</label>
 		<select id="video_type">
-		<option value="mp3" default>MP3</option>
-		<option value="mp4">MP4</option>
-		<option value="any">Any</option>
+			<option value="mp3" default>MP3</option>
+			<option value="mp4">MP4</option>
+			<option value="any">Any</option>
 		</select>
 		<button id="add_video_button" onclick="load_video()">Add</button>
-		<BR/>
-		<BR/>
+		<BR />
+		<BR />
 		<h2>Remove Video</h2>
 		<label for="name">Index</label>
 		<input id="video_idx" type="text">
 
 		<button id="remove_video_button" onclick="remove_video()">Remove</button>
-		<BR/>
-		<BR/>
+		<BR />
+		<BR />
 		<a href="http://www.wuteri.ch/dlp">Clear</a>
 	</div>
 	<hr />
 	<div id="tool_output" style="white-space: pre-line; height: 300px; overflow-y: scroll;"></div>
-	</body>
-</html>
+</body>
 
+</html>

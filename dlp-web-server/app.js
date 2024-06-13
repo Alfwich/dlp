@@ -1,4 +1,4 @@
-function app() {}
+function app() { }
 
 app.scope = "global";
 
@@ -7,7 +7,7 @@ app.on_job_log_loaded = null;
 app.on_job_status_loaded = null;
 
 app.is_loading = false;
-app.log_bytes_recv = 0;
+app.log_byte_position = 0;
 
 app.set_scope = (new_scope) => {
 	app.scope = new_scope;
@@ -15,7 +15,7 @@ app.set_scope = (new_scope) => {
 
 app.load_data = (url, type) => {
 	if (!app.is_loading) {
-		app.log_bytes_recv = 0;
+		app.log_byte_position = 0;
 		app.is_loading = fetch("data.php", {
 			method: "POST",
 			body: JSON.stringify({
@@ -28,22 +28,22 @@ app.load_data = (url, type) => {
 				"Content-type": "application/json; charset=UTF-8"
 			}
 		})
-		.then((response) => response.json())
-		.then((json) => {
-			app.data = json;
-			if (app.on_data_loaded) {
-				app.on_data_loaded();
-			}
-			app.is_loading = false;
+			.then((response) => response.json())
+			.then((json) => {
+				app.data = json;
+				if (app.on_data_loaded) {
+					app.on_data_loaded();
+				}
+				app.is_loading = false;
 
-			if (json) {
-				app.load_job_status();
-			}
-		}); 
+				if (json) {
+					app.load_job_status();
+				}
+			});
 	}
 }
 
-app.load_job_log = (start_bytes=0) => {
+app.load_job_log = (start_bytes = 0) => {
 	if (app.data.id) {
 		fetch("processing/" + app.data.id + "/log.txt", {
 			method: "GET",
@@ -51,46 +51,47 @@ app.load_job_log = (start_bytes=0) => {
 				"Range": "bytes=" + start_bytes + "-"
 			},
 		})
-		.then((response) => {
-			if (response.status >= 200 && response.status < 300) {
-				var content_range_header = response.headers.get("Content-Range");
-				var content_range_parts = !!content_range_header ? response.headers.get("Content-Range").split("/") : [];
-				if (content_range_parts.length > 1) {
-					var next_byte = parseInt(content_range_parts[1]);
-					if (!isNaN(next_byte)) {
-						app.log_bytes_recv = parseInt(next_byte);
+			.then((response) => {
+				if (response.status >= 200 && response.status < 300) {
+					var content_range_header = response.headers.get("Content-Range");
+					var content_range_parts = !!content_range_header ? content_range_header.split("/") : [];
+					if (content_range_parts.length > 1) {
+						var next_byte = parseInt(content_range_parts[1]);
+						if (!isNaN(next_byte)) {
+							app.log_byte_position = parseInt(next_byte);
+						}
 					}
+					return response.text();
+				} else {
+					return "";
 				}
-				return response.text();
-			} else {
-				return "";
-			}
-		})
-		.then((body) => {
-			if (app.on_job_log_loaded) {
-				app.on_job_log_loaded(body);
-			}
-		});
+			})
+			.then((body) => {
+				if (app.on_job_log_loaded) {
+					app.on_job_log_loaded(body);
+				}
+			});
 	}
 }
 
 app.load_job_status = () => {
 	if (app.data.id) {
-		fetch("processing/" + app.data.id + "/done", { 
-			method: "GET", 
-		} )
-		.then((response) => {
-			if (app.on_job_status_loaded) {
-				app.on_job_status_loaded(response.status == 200);
-			}
+		fetch("processing/" + app.data.id + "/done", {
+			method: "GET",
+		})
+			.then((response) => {
+				if (app.on_job_status_loaded) {
+					app.on_job_status_loaded(response.status);
+				}
 
-			app.load_job_log(app.log_bytes_recv);
-			if (response.status != 200) {
-				setTimeout(() => {
-					app.load_job_status();
-				}, 250);
-			}
-		});
+				app.load_job_log(app.log_byte_position);
+				if (response.status != 200) {
+					var interval = app.log_byte_position > 0 ? 250 : 1000;
+					setTimeout(() => {
+						app.load_job_status();
+					}, interval);
+				}
+			});
 	}
 }
 
@@ -107,12 +108,12 @@ app.remove_video = (video_idx) => {
 			"Content-type": "application/json; charset=UTF-8"
 		}
 	})
-	.then((response) => response.json())
-	.then((json) => {
-		app.data = json;
-		if (app.on_data_loaded) {
-			app.on_data_loaded();
-		}
-	}); 
+		.then((response) => response.json())
+		.then((json) => {
+			app.data = json;
+			if (app.on_data_loaded) {
+				app.on_data_loaded();
+			}
+		});
 }
 

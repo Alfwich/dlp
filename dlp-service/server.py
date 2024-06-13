@@ -8,7 +8,6 @@ import multiprocessing as mp
 import os
 import json
 import sys
-import base64
 import shutil
 import time
 
@@ -19,15 +18,18 @@ from datetime import datetime
 dlp_directory = "/usr/www/dlp-client"
 web_server_dir = "/www/wuteri.ch/dlp"
 
+
 def log(msg):
     preamble = f"[{datetime.now().strftime('%H:%M:%S:%f')}]"
     sys.stdout.write(f"{preamble} {msg}")
     sys.stdout.flush()
 
+
 def exec_cmd(cmd, writer):
     pretty_cmd = " ".join(cmd)
     log(f"Executing command: {pretty_cmd}\n")
     subprocess.run(cmd, stdout=writer, stderr=writer)
+
 
 def worker_proc(q):
     os.chdir(web_server_dir)
@@ -39,7 +41,7 @@ def worker_proc(q):
 
         payload = json.loads(data[1][1:])
 
-        url = payload["url"];
+        url = payload["url"]
         desired_type = payload["type"]
         scope = payload["scope"]
 
@@ -58,19 +60,22 @@ def worker_proc(q):
 
         shutil.rmtree(f"{web_server_dir}/processing/{data[0]}")
 
+
 def get_next_id():
     result = hashlib.sha256(str(random.getrandbits(256)).encode('utf-8')).hexdigest()
     return result[:15]
 
+
 class Server:
     ctx = None
     queue = None
-    workers = [] 
+    workers = []
 
     def __init__(self):
         self.ctx = mp.get_context('spawn')
         self.queue = self.ctx.Queue()
-        for i in range(3):
+
+        for _ in range(3):
             self.workers.append(self.ctx.Process(target=worker_proc, args=(self.queue,)))
 
         for worker in self.workers:
@@ -86,6 +91,7 @@ class Server:
     def do_work(self, job_id, data):
         self.queue.put((job_id, data))
 
+
 class Serv(BaseHTTPRequestHandler):
     def do_GET(self):
         job_id = get_next_id()
@@ -93,6 +99,7 @@ class Serv(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
         self.wfile.write(bytes(job_id, "utf-8"))
+
 
 if __name__ == "__main__":
     global server
