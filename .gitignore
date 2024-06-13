@@ -1,4 +1,4 @@
-build
 __pycache__
 dlp-web-server/content
 dlp-web-server/processing
+dlp-web-server/target
