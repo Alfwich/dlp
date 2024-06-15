@@ -13,14 +13,16 @@ app.set_scope = (new_scope) => {
 	app.scope = new_scope;
 }
 
-app.load_data = (url, type) => {
+app.load_data = (args = {}) => {
 	if (!app.is_loading) {
 		app.log_byte_position = 0;
 		app.is_loading = fetch("data.php", {
 			method: "POST",
 			body: JSON.stringify({
-				url: url,
-				type: type,
+				url: args.url,
+				type: args.type,
+				start: args.start,
+				duration: args.duration,
 				scope: app.scope,
 				remove_idx: null,
 			}),
@@ -99,8 +101,6 @@ app.remove_video = (video_idx) => {
 	fetch("data.php", {
 		method: "POST",
 		body: JSON.stringify({
-			url: "",
-			type: "",
 			scope: app.scope,
 			remove_idx: video_idx,
 		}),

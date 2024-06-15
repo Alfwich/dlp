@@ -148,6 +148,7 @@ def new_working_dir(scope):
     return f"{target_dir}/{scope}/{result[:15]}"
 
 def main_payload(args):
+    log(f"Starting job with args: {args}\n")
     main(args.get("url"), args.get("type"), args.get("scope"))
 
 def main(video_url, final_type, scope):

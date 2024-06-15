@@ -5,6 +5,16 @@
 		a {
 			padding-right: 10px;
 		}
+		input {
+			float: right;
+		}
+		.input-div {
+			margin-bottom: 20px;
+		}
+
+		.input-div label {
+			padding-right: 5px;
+		}
 	</style>
 	<script type="text/javascript" src="./app.js"></script>
 	<script type="text/javascript">
@@ -81,7 +91,10 @@
 			disable_inputs();
 			var url = document.getElementById("video_url").value;
 			var type = document.getElementById("video_type").value;
-			app.load_data(url, type);
+			var start = document.getElementById("video_start_position").value;
+			var duration = document.getElementById("video_duration").value;
+
+			app.load_data({url, type, start, duration});
 			clear_videos();
 		};
 
@@ -118,18 +131,29 @@
 		<label for="name">Scope</label>
 		<input id="scope" type="text" onchange="change_scope()">
 		<h2>Add Video</h2>
-		<label for="name">Url</label>
-		<input id="video_url" type="text">
+		<div class="input-div">
+			<label>Url</label>
+			<input id="video_url" type="text">
+		</div>
+		<div class="input-div">
+			<label>Clip Start Position</label>
+			<input id="video_start_position" type="text">
+		</div>
 
-		<label for="type">Type</label>
-		<select id="video_type">
-			<option value="mp3" default>MP3</option>
-			<option value="mp4">MP4</option>
-			<option value="any">Any</option>
-		</select>
+		<div class="input-div">
+			<label>Clip Duration</label>
+			<input id="video_duration" type="text">
+		</div>
+
+		<div class="input-div">
+			<label for="type">Type</label>
+			<select id="video_type">
+				<option value="mp3" default>MP3</option>
+				<option value="mp4">MP4</option>
+				<option value="any">Any</option>
+			</select>
+		</div>
 		<button id="add_video_button" onclick="load_video()">Add</button>
-		<BR />
-		<BR />
 		<h2>Remove Video</h2>
 		<label for="name">Index</label>
 		<input id="video_idx" type="text">
