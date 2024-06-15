@@ -25,26 +25,24 @@ $files = array();
 $raw_data = file_get_contents('php://input');
 $in_data = json_decode($raw_data, true);
 
+$in_data['scope'] = preg_replace("/[^a-zA-Z0-9]+/", "", substr($in_data['scope'], 0, 20));
+
 $url = $in_data['url'];
 $type = $in_data['type'];
 $remove_idx = $in_data['remove_idx'];
-$scope = preg_replace("/[^a-zA-Z0-9]+/", "", substr($in_data['scope'], 0, 20));
+$scope = $in_data['scope'];
 
 if (empty($scope)) {
 	$scope = "global";
 }
 
 if (!empty($url) && !empty($type) && ($type == "mp3" || $type == "mp4" || $type == "any")) {
-	$encoded_url = base64_encode($url);
-	$encoded_type = base64_encode($type);
-	$encoded_scope = base64_encode($scope);
-	$job_data = array(
-		"url" => $encoded_url,
-		"type" => $encoded_type,
-		"scope" => $encoded_scope,
-	);
+	foreach ($in_data as $key => &$value) {
+		$value = base64_encode($value);
+	}
+	unset($value);
 	$job = curl_init();
-	curl_setopt($job, CURLOPT_URL, "localhost/" . json_encode($job_data));
+	curl_setopt($job, CURLOPT_URL, "localhost/" . json_encode($in_data));
 	curl_setopt($job, CURLOPT_PORT, 4141);
 	curl_setopt($job, CURLOPT_VERBOSE, 0);
 	curl_setopt($job, CURLOPT_RETURNTRANSFER, 1);
