@@ -147,6 +147,8 @@ def new_working_dir(scope):
     result = hashlib.sha256(str(random.getrandbits(256)).encode('utf-8')).hexdigest()
     return f"{target_dir}/{scope}/{result[:15]}"
 
+def main_payload(args):
+    main(args.get("url"), args.get("type"), args.get("scope"))
 
 def main(video_url, final_type, scope):
     resolved_scope = process_scope(scope)

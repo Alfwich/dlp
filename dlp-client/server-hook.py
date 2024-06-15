@@ -2,16 +2,22 @@
 
 import base64
 import sys
+import json
 
-from download import main as dl_main
+from download import main_payload as dl_main_payload
 from download import log 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        log("Expected usage: ./download-server.py <url> <type> [scope]\n")
+    if len(sys.argv) > 1:
+        log("Expected usage: cat input.json | ./download-server.py\n")
     else:
-        url = base64.b64decode(sys.argv[1]).decode("utf-8")
-        desired_type = base64.b64decode(sys.argv[2]).decode("utf-8")
-        scope = base64.b64decode(sys.argv[3]).decode("utf-8") if len(sys.argv) > 3 else ""
+        json_payload = ""
+        for line in sys.stdin:
+            json_payload += line
 
-        dl_main(url, desired_type, scope)
+        args = json.loads(json_payload)
+
+        for k in args:
+            args[k] = base64.b64decode(args[k]).decode("utf-8")
+
+        dl_main_payload(args)

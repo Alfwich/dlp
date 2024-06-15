@@ -25,10 +25,10 @@ def log(msg):
     sys.stdout.flush()
 
 
-def exec_cmd(cmd, writer):
+def exec_cmd(cmd, data, writer):
     pretty_cmd = " ".join(cmd)
-    log(f"Executing command: {pretty_cmd}\n")
-    subprocess.run(cmd, stdout=writer, stderr=writer)
+    log(f"Executing command: {pretty_cmd}, data: {data}\n")
+    subprocess.run(cmd, input=data.encode("utf-8"), stdout=writer, stderr=writer)
 
 
 def worker_proc(q):
@@ -39,16 +39,12 @@ def worker_proc(q):
         if data is "quit":
             return
 
-        payload = json.loads(data[1][1:])
-
-        url = payload["url"]
-        desired_type = payload["type"]
-        scope = payload["scope"]
 
         log(f"Starting job id: {data[0]}\n")
         os.mkdir(f"{web_server_dir}/processing/{data[0]}")
         with open(f"{web_server_dir}/processing/{data[0]}/log.txt", "wb") as writer:
-            exec_cmd(["python3", f"{dlp_directory}/server-hook.py", url, desired_type, scope], writer)
+            json_data = data[1][1:]
+            exec_cmd(["python3", f"{dlp_directory}/server-hook.py"], json_data, writer)
 
         with open(f"{web_server_dir}/processing/{data[0]}/done", "wb") as writer:
             writer.write(bytes("1", "utf-8"))

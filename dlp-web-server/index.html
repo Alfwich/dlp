@@ -99,7 +99,12 @@
 			app.set_scope(simple_scope);
 			app.load_data();
 			clear_videos();
-		}
+		};
+
+		function reset_dlp() {
+			document.getElementById("scope").value = "global";
+			change_scope();
+		};
 	</script>
 </head>
 
@@ -132,7 +137,7 @@
 		<button id="remove_video_button" onclick="remove_video()">Remove</button>
 		<BR />
 		<BR />
-		<a href="http://www.wuteri.ch/dlp">Clear</a>
+		<a href="javascript:reset_dlp();">Clear</a>
 	</div>
 	<hr />
 	<div id="tool_output" style="white-space: pre-line; height: 300px; overflow-y: scroll;"></div>
