@@ -78,19 +78,36 @@ def exec_cmd(cmd):
     subprocess.run(cmd, stderr=subprocess.STDOUT)
 
 
-def convert_video(working_dir, scope, video_file, final_type):
-    title = f"{get_name_from_file(video_file)}.{final_type}"
+def get_args_file_additions(args):
+    result = []
+
+    if "start" in args and len(args["start"]) > 0:
+        result.append(f'start_{args["start"]}s')
+
+    if "duration" in args and len(args["duration"]) > 0:
+        result.append(f'dur_{args["duration"]}s')
+
+    if len(result) > 0:
+        return "." + ".".join(result)
+
+    return ""
+
+def convert_video(working_dir, scope, video_file, final_type, args):
+    args_file_additions = get_args_file_additions(args)
+    title = f"{get_name_from_file(video_file)}{args_file_additions}.{final_type}"
     source_file_name = f"{working_dir}/{video_file}"
     dest_file = f"{content_dir}/{scope}/{title}"
 
     if not Path(dest_file).exists():
         log(f"Converting video to .{final_type} ... \n")
         video_options = ["-preset", "ultrafast"] if final_type is "mp4" else []
-        exec_cmd([f"/usr/bin/ffmpeg", "-i", source_file_name] + video_options + [title])
+        start_options = ["-ss", args["start"]] if "start" in args and len(args["start"]) > 0 else []
+        duration_options = ["-t", args["duration"]] if "duration" in args and len(args["duration"]) > 0 else []
+        exec_cmd([f"/usr/bin/ffmpeg"] + start_options + ["-i", source_file_name] + duration_options + video_options + [title])
         log("Done!\n")
 
 
-def download_and_process_video(working_dir, scope, url, final_type):
+def download_and_process_video(working_dir, scope, url, final_type, args):
     cwd = os.getcwd()
     os.chdir(working_dir)
     acquire_yt_dlp()
@@ -100,10 +117,11 @@ def download_and_process_video(working_dir, scope, url, final_type):
 
     if final_type != "any":
         video_file = find_downloaded_file(working_dir)
-        convert_video(working_dir, scope, video_file, final_type)
+        convert_video(working_dir, scope, video_file, final_type, args)
     else:
         video_file = find_downloaded_file(working_dir)
-        renamed_file = f"{get_name_from_file(video_file)}{Path(video_file).suffix}"
+        renamed_file_name = get_name_from_file(video_file)
+        renamed_file = f"{renamed_file_name}{Path(video_file).suffix}"
         exec_cmd(["mv", video_file, renamed_file])
 
     os.chdir(cwd)
@@ -149,14 +167,14 @@ def new_working_dir(scope):
 
 def main_payload(args):
     log(f"Starting job with args: {args}\n")
-    main(args.get("url"), args.get("type"), args.get("scope"))
+    main(args.get("url"), args.get("type"), args.get("scope"), args)
 
-def main(video_url, final_type, scope):
+def main(video_url, final_type, scope, args={}):
     resolved_scope = process_scope(scope)
     working_dir = new_working_dir(resolved_scope)
     log(f"Executing download url: {video_url}, type: {final_type}, working_dir: {working_dir}\n")
     prepare_dir(working_dir, resolved_scope)
-    download_and_process_video(working_dir, resolved_scope, video_url, final_type)
+    download_and_process_video(working_dir, resolved_scope, video_url, final_type, args)
     move_files(working_dir, resolved_scope, final_type)
     cleanup_dir(working_dir, resolved_scope)
     log("Done adding video!\n")

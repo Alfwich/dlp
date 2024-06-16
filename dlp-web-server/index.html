@@ -47,6 +47,8 @@
 				}
 
 				document.getElementById("video_url").value = "";
+				document.getElementById("video_start_position").value = "";
+				document.getElementById("video_duration").value = "";
 			};
 
 			app.on_job_log_loaded = (data) => {
@@ -79,12 +81,16 @@
 			document.getElementById("add_video_button").disabled = true;
 			document.getElementById("remove_video_button").disabled = true;
 			document.getElementById("scope").disabled = true;
+			document.getElementById("video_start_position").disabled = true;
+			document.getElementById("video_duration").disabled = true;
 		}
 
 		function enable_inputs() {
 			document.getElementById("add_video_button").disabled = false;
 			document.getElementById("remove_video_button").disabled = false;
 			document.getElementById("scope").disabled = false;
+			document.getElementById("video_start_position").disabled = false;
+			document.getElementById("video_duration").disabled = false;
 		}
 
 		function load_video() {
@@ -136,13 +142,13 @@
 			<input id="video_url" type="text">
 		</div>
 		<div class="input-div">
-			<label>Clip Start Position</label>
-			<input id="video_start_position" type="text">
+			<label>Clip Start Position (Second)</label>
+			<input id="video_start_position" type="number">
 		</div>
 
 		<div class="input-div">
-			<label>Clip Duration</label>
-			<input id="video_duration" type="text">
+			<label>Clip Duration (Second)</label>
+			<input id="video_duration" type="number">
 		</div>
 
 		<div class="input-div">
