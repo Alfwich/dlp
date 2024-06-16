@@ -87,7 +87,7 @@ app.load_job_status = () => {
 				}
 
 				app.load_job_log(app.log_byte_position);
-				if (response.status != 200) {
+				if (response.status != 200 && response.status < 500) {
 					var interval = app.log_byte_position > 0 ? 1000 : 3000;
 					setTimeout(() => {
 						app.load_job_status();

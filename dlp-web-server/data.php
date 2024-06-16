@@ -42,7 +42,7 @@ if (!empty($url) && !empty($type) && ($type == "mp3" || $type == "mp4" || $type 
 	}
 	unset($value);
 	$job = curl_init();
-	curl_setopt($job, CURLOPT_URL, "localhost/" . json_encode($in_data));
+	curl_setopt($job, CURLOPT_URL, "localhost/" . base64_encode(json_encode($in_data)));
 	curl_setopt($job, CURLOPT_PORT, 4141);
 	curl_setopt($job, CURLOPT_VERBOSE, 0);
 	curl_setopt($job, CURLOPT_RETURNTRANSFER, 1);

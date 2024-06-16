@@ -78,19 +78,27 @@
 		}
 
 		function disable_inputs() {
+			document.getElementById("video_url").disabled = true;
+			document.getElementById("remove_index").disabled = true;
 			document.getElementById("add_video_button").disabled = true;
 			document.getElementById("remove_video_button").disabled = true;
 			document.getElementById("scope").disabled = true;
 			document.getElementById("video_start_position").disabled = true;
 			document.getElementById("video_duration").disabled = true;
+			document.getElementById("video_type").disabled = true;
 		}
 
 		function enable_inputs() {
+			document.getElementById("video_url").disabled = false;
+			document.getElementById("remove_index").disabled = false;
 			document.getElementById("add_video_button").disabled = false;
 			document.getElementById("remove_video_button").disabled = false;
 			document.getElementById("scope").disabled = false;
-			document.getElementById("video_start_position").disabled = false;
-			document.getElementById("video_duration").disabled = false;
+			document.getElementById("video_type").disabled = false;
+
+			var type_is_any = document.getElementById("video_type").value === "any";
+			document.getElementById("video_start_position").disabled = type_is_any;
+			document.getElementById("video_duration").disabled = type_is_any;
 		}
 
 		function load_video() {
@@ -106,8 +114,7 @@
 
 		function remove_video() {
 			disable_inputs();
-			var video_idx = document.getElementById("video_idx").value;
-			app.remove_video(video_idx);
+			app.remove_video(document.getElementById("remove_index").value);
 		};
 
 		function change_scope() {
@@ -118,6 +125,19 @@
 			app.set_scope(simple_scope);
 			app.load_data();
 			clear_videos();
+		};
+
+		function change_type() {
+			var type_is_any = document.getElementById("video_type").value === "any";
+			if (type_is_any) {
+				document.getElementById("video_start_position").value = "";
+				document.getElementById("video_duration").value = "";
+				document.getElementById("video_start_position").disabled = true;
+				document.getElementById("video_duration").disabled = true;
+			} else {
+				document.getElementById("video_start_position").disabled = false;
+				document.getElementById("video_duration").disabled = false;
+			}
 		};
 
 		function reset_dlp() {
@@ -153,7 +173,7 @@
 
 		<div class="input-div">
 			<label for="type">Type</label>
-			<select id="video_type">
+			<select id="video_type" onchange="change_type()">
 				<option value="mp3" default>MP3</option>
 				<option value="mp4">MP4</option>
 				<option value="any">Any</option>
@@ -162,7 +182,7 @@
 		<button id="add_video_button" onclick="load_video()">Add</button>
 		<h2>Remove Video</h2>
 		<label for="name">Index</label>
-		<input id="video_idx" type="text">
+		<input id="remove_index" type="text">
 
 		<button id="remove_video_button" onclick="remove_video()">Remove</button>
 		<BR />
