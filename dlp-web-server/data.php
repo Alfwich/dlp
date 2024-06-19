@@ -19,7 +19,7 @@ function sort_fn($fileA, $fileB) {
 	return filemtime($fileA) < filemtime($fileB);
 };
 
-$job_id = null;
+$id = null;
 $files = array();
 
 $raw_data = file_get_contents('php://input');
