@@ -1,22 +1,17 @@
 #!/usr/bin/python3
 
-import hashlib
-import random
-import json
 import subprocess
 import multiprocessing as mp
 import os
-import json
 import sys
 import shutil
 import time
 
-from threading import Thread
-from http.server import HTTPServer, BaseHTTPRequestHandler
 from datetime import datetime
 
-dlp_directory = "/usr/www/dlp-client"
+dlp_directory = "/www/dlp-client"
 web_server_dir = "/www/wuteri.ch/dlp"
+web_server_ingest_dir = f"{web_server_dir}/ingest"
 
 
 def log(msg):
@@ -28,7 +23,7 @@ def log(msg):
 def exec_cmd(cmd, data, writer):
     pretty_cmd = " ".join(cmd)
     log(f"Executing command: {pretty_cmd}, data: {data}\n")
-    subprocess.run(cmd, input=data.encode("utf-8"), stdout=writer, stderr=writer)
+    subprocess.run(cmd, input=data, stdout=writer, stderr=writer)
 
 
 def worker_proc(q):
@@ -36,15 +31,13 @@ def worker_proc(q):
     while True:
         data = q.get()
 
-        if data is "quit":
+        if data == "quit":
             return
-
 
         log(f"Starting job id: {data[0]}\n")
         os.mkdir(f"{web_server_dir}/processing/{data[0]}")
         with open(f"{web_server_dir}/processing/{data[0]}/log.txt", "wb") as writer:
-            json_data = data[1][1:]
-            exec_cmd(["python3", f"{dlp_directory}/server-hook.py"], json_data, writer)
+            exec_cmd(["python3", f"{dlp_directory}/server-hook.py"], data[1], writer)
 
         with open(f"{web_server_dir}/processing/{data[0]}/done", "wb") as writer:
             writer.write(bytes("1", "utf-8"))
@@ -57,50 +50,28 @@ def worker_proc(q):
         shutil.rmtree(f"{web_server_dir}/processing/{data[0]}")
 
 
-def get_next_id():
-    result = hashlib.sha256(str(random.getrandbits(256)).encode('utf-8')).hexdigest()
-    return result[:15]
-
-
-class Server:
-    ctx = None
-    queue = None
-    workers = []
-
-    def __init__(self):
-        self.ctx = mp.get_context('spawn')
-        self.queue = self.ctx.Queue()
-
-        for _ in range(3):
-            self.workers.append(self.ctx.Process(target=worker_proc, args=(self.queue,)))
-
-        for worker in self.workers:
-            worker.start()
-
-    def __del__(self):
-        for worker in self.workers:
-            self.queue.put("quit")
-
-        for worker in self.workers:
-            worker.join()
-
-    def do_work(self, job_id, data):
-        self.queue.put((job_id, data))
-
-
-class Serv(BaseHTTPRequestHandler):
-    def do_GET(self):
-        job_id = get_next_id()
-        server.do_work(job_id, self.path)
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(bytes(job_id, "utf-8"))
-
-
 if __name__ == "__main__":
-    global server
-    server = Server()
-    config = ('localhost', 4141)
-    print(f"Serving on {config}")
-    httpd = HTTPServer(config, Serv)
-    httpd.serve_forever()
+    ctx = mp.get_context('spawn')
+    queue = ctx.Queue()
+
+    workers = []
+    for i in range(3):
+        worker = ctx.Process(target=worker_proc, args=(queue,))
+        worker.start()
+        workers.append(worker)
+
+    print("Starting main loop")
+    while True:
+        print("Checking for ingest files")
+        ingest_files = os.listdir(web_server_ingest_dir)
+        for f in ingest_files:
+            full_file_name = f"{web_server_ingest_dir}/{f}"
+            print(f"Found ingest file {f}")
+            with open(full_file_name, 'rb') as in_file:
+                job_id = f
+                data = in_file.read()
+                print(f"    Started job {job_id}, with data: {data}")
+                queue.put((job_id, data))
+
+            os.remove(full_file_name)
+        time.sleep(1)

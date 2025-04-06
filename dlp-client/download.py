@@ -15,6 +15,7 @@ server_dir = "/www/wuteri.ch/dlp"
 target_dir = f"{server_dir}/target"
 content_dir = f"{server_dir}/content"
 
+
 def log(msg):
     preamble = f"[{datetime.now().strftime('%H:%M:%S:%f')}]"
     sys.stdout.write(f"{preamble} {msg}")
@@ -92,6 +93,7 @@ def get_args_file_additions(args):
 
     return ""
 
+
 def convert_video(working_dir, scope, video_file, final_type, args):
     args_file_additions = get_args_file_additions(args)
     title = f"{get_name_from_file(video_file)}{args_file_additions}.{final_type}"
@@ -103,7 +105,7 @@ def convert_video(working_dir, scope, video_file, final_type, args):
         video_options = ["-preset", "ultrafast"] if final_type is "mp4" else []
         start_options = ["-ss", args["start"]] if "start" in args and len(args["start"]) > 0 else []
         duration_options = ["-t", args["duration"]] if "duration" in args and len(args["duration"]) > 0 else []
-        exec_cmd([f"/usr/bin/ffmpeg"] + start_options + ["-i", source_file_name] + duration_options + video_options + [title])
+        exec_cmd([f"{target_dir}/ffmpeg"] + start_options + ["-i", source_file_name] + duration_options + video_options + [title])
         log("Done!\n")
 
 
@@ -128,7 +130,7 @@ def download_and_process_video(working_dir, scope, url, final_type, args):
 
 
 yt_binary_name = "yt-dlp"
-yt_dlp_download_url = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux_armv7l"
+yt_dlp_download_url = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux"
 yt_dlp_ttl = 60 * 60 * 24
 
 
@@ -165,9 +167,11 @@ def new_working_dir(scope):
     result = hashlib.sha256(str(random.getrandbits(256)).encode('utf-8')).hexdigest()
     return f"{target_dir}/{scope}/{result[:15]}"
 
+
 def main_payload(args):
     log(f"Starting job with args: {args}\n")
     main(args.get("url"), args.get("type"), args.get("scope"), args)
+
 
 def main(video_url, final_type, scope, args={}):
     resolved_scope = process_scope(scope)

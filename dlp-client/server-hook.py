@@ -5,7 +5,7 @@ import sys
 import json
 
 from download import main_payload as dl_main_payload
-from download import log 
+from download import log
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
@@ -13,9 +13,7 @@ if __name__ == "__main__":
     else:
         encoded_json_payload = ""
         for line in sys.stdin:
-            encoded_json_payload += line
-
-        json_payload = base64.b64decode(encoded_json_payload).decode("utf-8")
+            json_payload += line
         args = json.loads(json_payload)
 
         for k in args:

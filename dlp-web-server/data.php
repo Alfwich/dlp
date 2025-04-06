@@ -1,7 +1,5 @@
 <?php
-//ini_set('display_errors', '1');
-//ini_set('display_startup_errors', '1');
-//error_reporting(E_ALL);
+error_reporting(0);
 
 function endsWith( $haystack, $needle ) {
     $length = strlen( $needle );
@@ -35,19 +33,17 @@ $scope = $in_data['scope'];
 if (empty($scope)) {
 	$scope = "global";
 }
-
 if (!empty($url) && !empty($type) && ($type == "mp3" || $type == "mp4" || $type == "any")) {
 	foreach ($in_data as $key => &$value) {
 		$value = base64_encode($value);
 	}
 	unset($value);
-	$job = curl_init();
-	curl_setopt($job, CURLOPT_URL, "localhost/" . base64_encode(json_encode($in_data)));
-	curl_setopt($job, CURLOPT_PORT, 4141);
-	curl_setopt($job, CURLOPT_VERBOSE, 0);
-	curl_setopt($job, CURLOPT_RETURNTRANSFER, 1);
-	$id = curl_exec($job);
-	curl_close($job);
+	$job_id = bin2hex(random_bytes(20));
+	$id = $job_id;
+	$payload = json_encode($in_data);
+	$ingest_file = fopen("./ingest/" . $id, "wb");
+	fwrite($ingest_file, $payload);
+	fclose($ingest_file);
 } else if (is_dir("./content/" . $scope) && isset($remove_idx)) {
 	$cwd = getcwd();
 	chdir("./content/" . $scope);
