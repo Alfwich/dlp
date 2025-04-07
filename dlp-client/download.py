@@ -114,7 +114,7 @@ def download_and_process_video(working_dir, scope, url, final_type, args):
     os.chdir(working_dir)
     acquire_yt_dlp()
     log(f"Downloading video: [{url}] as {final_type} ... \n")
-    exec_cmd([f"{target_dir}/yt-dlp", url, "--no-playlist"])
+    exec_cmd([f"{target_dir}/yt-dlp", url, "--no-playlist", "--ffmpeg-location", f"{target_dir}/ffmpeg"])
     log("Done downloading!\n")
 
     if final_type != "any":
