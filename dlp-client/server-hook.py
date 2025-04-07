@@ -11,7 +11,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         log("Expected usage: cat input.json | ./download-server.py\n")
     else:
-        encoded_json_payload = ""
+        json_payload = ""
         for line in sys.stdin:
             json_payload += line
         args = json.loads(json_payload)
