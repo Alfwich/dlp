@@ -74,4 +74,4 @@ if __name__ == "__main__":
                 queue.put((job_id, data))
 
             os.remove(full_file_name)
-        time.sleep(1)
+        time.sleep(5)
