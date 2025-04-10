@@ -5,9 +5,11 @@
 		a {
 			padding-right: 10px;
 		}
+
 		input {
 			float: right;
 		}
+
 		.input-div {
 			margin-bottom: 20px;
 		}
@@ -19,6 +21,7 @@
 	<script type="text/javascript" src="./app.js"></script>
 	<script type="text/javascript">
 		window.onload = function () {
+
 			app.on_data_loaded = () => {
 				var list = document.getElementById("audio-tracks");
 				list.innerHTML = "";
@@ -63,7 +66,11 @@
 				}
 			};
 
-			if (window.localStorage.getItem("scope")) {
+			if (window.location.hash) {
+				var scope = window.location.hash.substring(1);
+				document.getElementById("scope").value = scope;
+				app.scope = scope;
+			} else if (window.localStorage.getItem("scope")) {
 				var scope = window.localStorage.getItem("scope");
 				document.getElementById("scope").value = scope;
 				app.scope = scope;
@@ -108,7 +115,7 @@
 			var start = document.getElementById("video_start_position").value;
 			var duration = document.getElementById("video_duration").value;
 
-			app.load_data({url, type, start, duration});
+			app.load_data({ url, type, start, duration });
 			clear_videos();
 		};
 
@@ -121,6 +128,7 @@
 			var scope = document.getElementById("scope").value;
 			var simple_scope = scope.replace(/[^a-zA-Z0-9]/g, '').substring(0, 15);
 			window.localStorage.setItem("scope", simple_scope);
+			window.location.hash = simple_scope;
 			document.getElementById("scope").value = simple_scope;
 			app.set_scope(simple_scope);
 			app.load_data();
